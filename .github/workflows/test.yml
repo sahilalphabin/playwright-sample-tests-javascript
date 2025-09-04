@@ -29,16 +29,16 @@ jobs:
           node-version: '18'
       - name: Create .env file
         run: |
-         echo "USERNAME=${{ secrets.USERNAME }}" >> .env
-         echo "USERNAME1=${{ secrets.USERNAME1 }}" >> .env
-         echo "PASSWORD=${{ secrets.PASSWORD }}" >> .env
-         echo "NEW_PASSWORD=${{ secrets.NEW_PASSWORD }}" >> .env
-         echo "FIRST_NAME=${{ secrets.FIRST_NAME }}" >> .env
-         echo "STREET_NAME=${{ secrets.STREET_NAME }}" >> .env
-         echo "CITY=${{ secrets.CITY }}" >> .env
-         echo "STATE=${{ secrets.STATE }}" >> .env
-         echo "COUNTRY=${{ secrets.COUNTRY }}" >> .env
-         echo "ZIP_CODE=${{ secrets.ZIP_CODE }}" >> .env
+         echo "USERNAME=SAHIL" >> .env
+         echo "USERNAME1=SAHIL1" >> .env
+         echo "PASSWORD=12qw!@QW" >> .env
+         echo "NEW_PASSWORD=12qw!@QW1" >> .env
+         echo "FIRST_NAME=SAHIL" >> .env
+         echo "STREET_NAME=ABC" >> .env
+         echo "CITY=ABC" >> .env
+         echo "STATE=DTATS" >> .env
+         echo "COUNTRY=YHWUHU" >> .env
+         echo "ZIP_CODE=38929" >> .env
 
       - name: Cache npm dependencies
         uses: actions/cache@v3
@@ -53,14 +53,14 @@ jobs:
           npm ci
           npx playwright install --with-deps
 
-      - name: Run shard ${{ matrix.shardIndex }}
+      - name: Run shard 2
         run: npx playwright test --project=chromium --reporter=blob --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.shardIndex }}
+          name: blob-report-2
           path: ./blob-report
           retention-days: 1
 
@@ -106,11 +106,11 @@ jobs:
         with:
           name: Playwright Test Report
           path: ./playwright-report
-          retention-days: 14
+          retention-days: 1
 
-      - name: Send TestDino report
-        run: |
-         npx --yes tdpw ./playwright-report \
-           --token="${{ secrets.TESTDINO_TOKEN }}" \
-           --upload-html \
-           --verbose
+      # - name: Send TestDino report
+      #   run: |
+      #    npx --yes tdpw ./playwright-report \
+      #      --token="${{ secrets.TESTDINO_TOKEN }}" \
+      #      --upload-html \
+      #      --verbose
