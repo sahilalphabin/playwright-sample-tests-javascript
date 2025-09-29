@@ -1,116 +1,116 @@
-# .github/workflows/playwright-daily.yml
-# Runs Playwright test shards every day at **11 : 42 AM IST** (06 : 12 UTC)
-# plus anytime you trigger it manually from the Actions tab.
+# # .github/workflows/playwright-daily.yml
+# # Runs Playwright test shards every day at **11 : 42 AM IST** (06 : 12 UTC)
+# # plus anytime you trigger it manually from the Actions tab.
 
-name: Run Playwright tests
+# name: Run Playwright tests
 
-on:
-  schedule:
-    - cron: '30 3 * * 1-5'
-  workflow_dispatch:
+# on:
+#   schedule:
+#     - cron: '30 3 * * 1-5'
+#   workflow_dispatch:
 
-jobs:
-  run-tests:
-    name: Run Playwright shards
-    runs-on: ubuntu-latest
+# jobs:
+#   run-tests:
+#     name: Run Playwright shards
+#     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1,2,3]
-        shardTotal: [2]
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         shardIndex: [1,2,3]
+#         shardTotal: [2]
 
-    steps:
-      - uses: actions/checkout@v4
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Setup Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Create .env file
-        run: |
-         echo "USERNAME=SAHIL" >> .env
-         echo "USERNAME1=SAHIL1" >> .env
-         echo "PASSWORD=12qw!@QW" >> .env
-         echo "NEW_PASSWORD=12qw!@QW1" >> .env
-         echo "FIRST_NAME=SAHIL" >> .env
-         echo "STREET_NAME=ABC" >> .env
-         echo "CITY=ABC" >> .env
-         echo "STATE=DTATS" >> .env
-         echo "COUNTRY=YHWUHU" >> .env
-         echo "ZIP_CODE=38929" >> .env
+#       - name: Setup Node.js 18.x
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '18'
+#       - name: Create .env file
+#         run: |
+#          echo "USERNAME=SAHIL" >> .env
+#          echo "USERNAME1=SAHIL1" >> .env
+#          echo "PASSWORD=12qw!@QW" >> .env
+#          echo "NEW_PASSWORD=12qw!@QW1" >> .env
+#          echo "FIRST_NAME=SAHIL" >> .env
+#          echo "STREET_NAME=ABC" >> .env
+#          echo "CITY=ABC" >> .env
+#          echo "STATE=DTATS" >> .env
+#          echo "COUNTRY=YHWUHU" >> .env
+#          echo "ZIP_CODE=38929" >> .env
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+#       - name: Cache npm dependencies
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
 
-      - name: Install deps + browsers
-        run: |
-          npm ci
-          npx playwright install --with-deps
+#       - name: Install deps + browsers
+#         run: |
+#           npm ci
+#           npx playwright install --with-deps
 
-      - name: Run shard 2
-        run: npx playwright test --project=chromium --reporter=blob --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+#       - name: Run shard 2
+#         run: npx playwright test --project=chromium --reporter=blob --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Upload blob report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: blob-report-2
-          path: ./blob-report
-          retention-days: 1
+#       - name: Upload blob report
+#         if: ${{ !cancelled() }}
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: blob-report-2
+#           path: ./blob-report
+#           retention-days: 1
 
-  merge-reports:
-    name: Merge Reports
-    needs: run-tests
-    if: always()             # run even if some shards fail
-    runs-on: ubuntu-latest
+#   merge-reports:
+#     name: Merge Reports
+#     needs: run-tests
+#     if: always()             # run even if some shards fail
+#     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Setup Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+#       - name: Setup Node.js 18.x
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '18'
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+#       - name: Cache npm dependencies
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
 
-      - name: Install deps + browsers
-        run: |
-          npm ci
-          npx playwright install --with-deps
+#       - name: Install deps + browsers
+#         run: |
+#           npm ci
+#           npx playwright install --with-deps
 
-      - name: Download all blob reports
-        uses: actions/download-artifact@v4
-        with:
-          path: ./all-blob-reports
-          pattern: blob-report-*
-          merge-multiple: true
+#       - name: Download all blob reports
+#         uses: actions/download-artifact@v4
+#         with:
+#           path: ./all-blob-reports
+#           pattern: blob-report-*
+#           merge-multiple: true
 
-      - name: Merge HTML & JSON reports
-        run: npx playwright merge-reports --config=playwright.config.js ./all-blob-reports
+#       - name: Merge HTML & JSON reports
+#         run: npx playwright merge-reports --config=playwright.config.js ./all-blob-reports
 
-      - name: Upload combined report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Playwright Test Report
-          path: ./playwright-report
-          retention-days: 1
+#       - name: Upload combined report
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: Playwright Test Report
+#           path: ./playwright-report
+#           retention-days: 1
 
-      # - name: Send TestDino report
-      #   run: |
-      #    npx --yes tdpw ./playwright-report \
-      #      --token="${{ secrets.TESTDINO_TOKEN }}" \
-      #      --upload-html \
-      #      --verbose
+#       # - name: Send TestDino report
+#       #   run: |
+#       #    npx --yes tdpw ./playwright-report \
+#       #      --token="${{ secrets.TESTDINO_TOKEN }}" \
+#       #      --upload-html \
+#       #      --verbose
